@@ -134,17 +134,15 @@ const crawler = new HttpCrawler({
                 const outputData = {
                     entityId,
                     currency,
-                    checkInDate: requestCheckInDate,
-                    checkOutDate: requestCheckOutDate,
+                    checkInDate: data2[1][4][0].join('-'),
+                    checkOutDate: data2[1][4][1].join('-'),
                     days,
                     adults,
                     scrapedAt: new Date().toISOString(),
                     requestUrl: request.url,
                     prices,
                     adults: input.adults,
-                    currency: data2[1][3],
-                    checkInDate: data2[1][4][0].join('-'),
-                    checkOutDate: data2[1][4][1].join('-')
+                    currency: data2[1][3]
                 };
                 
                 // Save to dataset
