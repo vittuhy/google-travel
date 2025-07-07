@@ -72,7 +72,7 @@ const crawler = new HttpCrawler({
     proxyConfiguration: proxyConfig,
     maxRequestRetries,
     requestHandlerTimeoutSecs: requestTimeoutSecs,
-    async requestHandler({ enqueueLinks, request, $, log, body }) {
+    async requestHandler({ request, log, body }) { // Removed unused enqueueLinks and $
         try {
             const output = body.toString();
             const lines = output.split('\n');
@@ -89,16 +89,16 @@ const crawler = new HttpCrawler({
                 }));
                 log.info('data2[2][21][0]', data2[2][21][0]);
                 log.info('prices', prices);
-                await Dataset.pushData({ 
-                    prices, 
-                    adults: adults, 
-                    currency: data2[1][3], 
-                    checkInDate: data2[1][4][0].join('-'), 
+                await Dataset.pushData({
+                    prices,
+                    adults: adults, // Used 'adults' from input destructuring
+                    currency: data2[1][3],
+                    checkInDate: data2[1][4][0].join('-'),
                     checkOutDate: data2[1][4][1].join('-'),
-                    entityId: entityId,
-                    days: days,
-                    scrapedAt: new Date().toISOString(),
-                    requestUrl: request.url
+                    entityId: entityId, // Added entityId to output
+                    days: days, // Added days to output
+                    scrapedAt: new Date().toISOString(), // Added scrapedAt to output
+                    requestUrl: request.url // Added requestUrl to output
                 });
             } else {
                 log.error('No target line found in the response');
