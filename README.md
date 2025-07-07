@@ -1,78 +1,146 @@
-## JavaScript Crawlee & CheerioCrawler template
+# Google Travel Hotel Scraper
 
-This template example was built with [Crawlee](https://crawlee.dev/) to scrape data from a website using [Cheerio](https://cheerio.js.org/) wrapped into [CheerioCrawler](https://crawlee.dev/api/cheerio-crawler/class/CheerioCrawler).
+This Apify Actor scrapes hotel pricing and availability data from Google Travel using their internal API.
 
-## Included features
+## Features
 
-- **[Apify SDK](https://docs.apify.com/sdk/js)** - toolkit for building [Actors](https://apify.com/actors)
-- **[Crawlee](https://crawlee.dev/)** - web scraping and browser automation library
-- **[Input schema](https://docs.apify.com/platform/actors/development/input-schema)** - define and easily validate a schema for your Actor's input
-- **[Dataset](https://docs.apify.com/sdk/python/docs/concepts/storages#working-with-datasets)** - store structured data where each object stored has the same attributes
-- **[Cheerio](https://cheerio.js.org/)** - a fast, flexible & elegant library for parsing and manipulating HTML and XML
+- Scrapes hotel pricing and availability from Google Travel
+- Supports multiple currencies (100+ currencies available)
+- Configurable check-in/check-out dates
+- Adjustable number of guests (adults and children)
+- Multiple room support
+- Language localization
+- Built-in proxy support via Apify
+- Comprehensive error handling and logging
 
-## How it works
+## Input Parameters
 
-This code is a JavaScript script that uses Cheerio to scrape data from a website. It then stores the website titles in a dataset.
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `entityId` | String | Yes | The Google Travel entity ID of the hotel/facility to scrape |
+| `currency` | String | Yes | Currency code for pricing (e.g., USD, EUR, JPY) |
+| `checkInDate` | String | Yes | Check-in date in YYYY-MM-DD format |
+| `days` | Integer | Yes | Number of days to stay (1-30) |
+| `adults` | Integer | Yes | Number of adult guests (1-10) |
+| `maxRequestRetries` | Integer | No | Maximum retries for failed requests (default: 3) |
+| `requestTimeoutSecs` | Integer | No | Request timeout in seconds (default: 60) |
+| `proxyGroups` | Array | No | Proxy groups to use (default: ["RESIDENTIAL"]) |
+| `proxyCountryCode` | String | No | Country code for proxy location (e.g., "US", "GB") |
 
-- The crawler starts with URLs provided from the input `startUrls` field defined by the input schema. Number of scraped pages is limited by `maxPagesPerCrawl` field from the input schema.
-- The crawler uses `requestHandler` for each URL to extract the data from the page with the Cheerio library and to save the title and URL of each page to the dataset. It also logs out each result that is being saved.
+## Output
 
-## Resources
+The Actor outputs data to the default dataset with the following structure:
 
-- [Video tutorial](https://www.youtube.com/watch?v=yTRHomGg9uQ) on building a scraper using CheerioCrawler
-- [Written tutorial](https://docs.apify.com/academy/web-scraping-for-beginners/challenge) on building a scraper using CheerioCrawler
-- [Web scraping with Cheerio in 2023](https://blog.apify.com/web-scraping-with-cheerio/)
-- How to [scrape a dynamic page](https://blog.apify.com/what-is-a-dynamic-page/) using Cheerio
-- [Integration with Zapier](https://apify.com/integrations), Make, Google Drive and others
-- [Video guide on getting data using Apify API](https://www.youtube.com/watch?v=ViYYDHSBAKM)
-- A short guide on how to create Actors using code templates:
-  
-[web scraper template](https://www.youtube.com/watch?v=u-i-Korzf8w)
+```json
+{
+    "entityId": "CgoI4L-j9bjz1IVpEAE",
+    "currency": "USD",
+    "checkInDate": "2025-05-19",
+    "checkOutDate": "2025-05-20",
+    "days": 1,
+    "adults": 1,
+    "scrapedAt": "2025-01-27T10:30:00.000Z",
+    "requestUrl": "https://www.google.com/_/TravelFrontendUi/data/batchexecute?...",
+    "responseData": { /* Parsed Google API response */ },
+    "rawResponseLength": 12345
+}
+```
+
+## How to Use
+
+1. **Deploy the Actor** to your Apify account
+2. **Configure the input parameters**:
+   - Set the `entityId` (found in Google Travel hotel URLs)
+   - Choose your preferred `currency`
+   - Set the `checkInDate`
+   - Adjust other parameters as needed
+3. **Run the Actor**
+4. **Download the results** from the dataset
+
+## Finding Hotel Entity IDs
+
+To find a hotel's entity ID:
+1. Go to Google Travel (https://www.google.com/travel)
+2. Search for a hotel
+3. Click on the hotel
+4. Look at the URL: `https://www.google.com/travel/hotels/entity/{ENTITY_ID}`
+5. Copy the entity ID from the URL
+
+## Example Input
+
+```json
+{
+    "entityId": "CgoI4L-j9bjz1IVpEAE",
+    "currency": "USD",
+    "checkInDate": "2025-05-19",
+    "days": 2,
+    "adults": 2
+}
+```
+
+## Supported Currencies
+
+The Actor supports 100+ currencies including:
+- USD (US Dollar)
+- EUR (Euro)
+- GBP (British Pound)
+- JPY (Japanese Yen)
+- CAD (Canadian Dollar)
+- AUD (Australian Dollar)
+- And many more...
 
 
 
-## Getting started
+## Error Handling
 
-For complete information [see this article](https://docs.apify.com/platform/actors/development#build-actor-at-apify-console). In short, you will:
+The Actor includes comprehensive error handling:
+- Invalid input validation
+- Network request retries
+- Response parsing error recovery
+- Failed request logging
+- All errors are saved to the dataset for debugging
 
-1. Build the Actor
-2. Run the Actor
+## Rate Limiting and Proxies
 
-## Pull the Actor for local development
+- The Actor uses Apify's built-in proxy support
+- Configure proxy settings in your Apify account
+- Built-in request retry mechanism
+- Configurable timeouts
 
-If you would like to develop locally, you can pull the existing Actor from Apify console using Apify CLI:
+### Proxy Configuration
 
-1. Install `apify-cli`
+The Actor uses Apify's standard proxy configuration:
 
-    **Using Homebrew**
+```json
+{
+    "proxyGroups": ["RESIDENTIAL"],
+    "proxyCountryCode": "US"
+}
+```
 
-    ```bash
-    brew install apify-cli
-    ```
+**Available Proxy Groups:**
+- `RESIDENTIAL` - Residential IP addresses (most reliable)
+- `DATACENTER` - Datacenter IP addresses (faster, cheaper)
+- `MOBILE` - Mobile IP addresses
+- `SERPSERP` - Specialized for search engines
 
-    **Using NPM**
+**Country Codes:**
+- Use ISO 3166-1 alpha-2 country codes (e.g., "US", "GB", "JP")
+- Leave empty to use any available location
 
-    ```bash
-    npm -g install apify-cli
-    ```
+## Development
 
-2. Pull the Actor by its unique `<ActorId>`, which is one of the following:
-    - unique name of the Actor to pull (e.g. "apify/hello-world")
-    - or ID of the Actor to pull (e.g. "E2jjCZBezvAZnX8Rb")
+To run this Actor locally:
 
-    You can find both by clicking on the Actor title at the top of the page, which will open a modal containing both Actor unique name and Actor ID.
+```bash
+npm install
+npm start
+```
 
-    This command will copy the Actor into the current directory on your local machine.
+## Legal Notice
 
-    ```bash
-    apify pull <ActorId>
-    ```
+This Actor is for educational and research purposes. Please ensure you comply with Google's Terms of Service and respect rate limits when using this tool.
 
-## Documentation reference
+## Support
 
-To learn more about Apify and Actors, take a look at the following resources:
-
-- [Apify SDK for JavaScript documentation](https://docs.apify.com/sdk/js)
-- [Apify SDK for Python documentation](https://docs.apify.com/sdk/python)
-- [Apify Platform documentation](https://docs.apify.com/platform)
-- [Join our developer community on Discord](https://discord.com/invite/jyEM2PRvMU)
+For support, please refer to the Apify documentation or contact Apify support.

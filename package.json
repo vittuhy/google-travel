@@ -1,8 +1,8 @@
 {
-    "name": "crawlee-cheerio-javascript",
-    "version": "0.0.1",
+    "name": "google-travel-hotel-scraper",
+    "version": "1.0.0",
     "type": "module",
-    "description": "This is a boilerplate of an Apify actor.",
+    "description": "Apify Actor for scraping Google Travel hotel pricing and availability data",
     "engines": {
         "node": ">=18.0.0"
     },
@@ -20,6 +20,6 @@
         "lint:fix": "eslint ./src --ext .js,.jsx --fix",
         "test": "echo \"Error: oops, the actor has no tests yet, sad!\" && exit 1"
     },
-    "author": "It's not you it's me",
+    "author": "Apify",
     "license": "ISC"
 }
