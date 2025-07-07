@@ -1,0 +1,14 @@
+{
+    "entityId": "CgsIy52q7rmXvY-BARAB",
+    "checkInDate": "2025-07-03",
+    "currency": "EUR",
+    "days": 3,
+    "adults": 1,
+    "maxRequestRetries": 3,
+    "requestTimeoutSecs": 60,
+    "proxyConfiguration": {
+        "useApifyProxy": true,
+        "apifyProxyGroups": ["RESIDENTIAL"],
+        "apifyProxyCountry": "US"
+    }
+} 

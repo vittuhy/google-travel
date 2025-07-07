@@ -5,7 +5,26 @@ import { HttpCrawler, Dataset } from 'crawlee';
 
 await Actor.init();
 
-const input = await Actor.getInput();
+let input = await Actor.getInput();
+
+// For local testing, use default input if none provided
+if (!input) {
+    input = {
+        entityId: "CgsIy52q7rmXvY-BARAB",
+        checkInDate: "2025-07-03",
+        currency: "EUR",
+        days: 3,
+        adults: 1,
+        maxRequestRetries: 3,
+        requestTimeoutSecs: 60,
+        proxyConfiguration: {
+            useApifyProxy: true,
+            apifyProxyGroups: ["RESIDENTIAL"],
+            apifyProxyCountry: "US"
+        }
+    };
+    console.log('Using default input for local testing');
+}
 
 // Validate required inputs
 if (!input.entityId) {
@@ -72,27 +91,11 @@ const crawler = new HttpCrawler({
     proxyConfiguration: proxyConfig,
     maxRequestRetries,
     requestHandlerTimeoutSecs: requestTimeoutSecs,
-    async requestHandler({ request, log, body }) { // Removed unused enqueueLinks and $
-        let output; // Declare output here
+    async requestHandler({ request, log, body }) {
         try {
-            // Handle the case where body.toString() returns an object with character indices
-            const bodyStr = body.toString();
-            log.info('BodyStr type:', typeof bodyStr);
-            log.info('BodyStr is object:', typeof bodyStr === 'object');
-            
-            if (typeof bodyStr === 'object' && bodyStr !== null) {
-                // Convert the character-indexed object back to a string
-                output = Object.values(bodyStr).join('');
-                log.info('Converted from object to string');
-            } else {
-                output = bodyStr;
-                log.info('Used bodyStr directly');
-            }
-            
-            log.info('Final output type:', typeof output);
+            const output = body.toString();
             log.info('Response length:', output.length);
             log.info('Response starts with:', output.substring(0, 50));
-            
             const lines = output.split('\n');
             log.info('Number of lines:', lines.length);
             const targetLine = lines.find(line => line.trim().startsWith('['));
@@ -115,22 +118,13 @@ const crawler = new HttpCrawler({
                     checkInDate: data2[1][4][0].join('-'),
                     checkOutDate: data2[1][4][1].join('-'),
                     entityId: entityId,
-                    days: days,
-                    scrapedAt: new Date().toISOString(),
-                    requestUrl: request.url
+                    days: days
                 });
             } else {
-                log.error('No target line found in the response for URL:', request.url);
-                // Save the full body for inspection if no targetLine is found
-                await Actor.setValue(`response-body-${Date.now()}-no-target-line`, output, { contentType: 'text/plain' });
+                log.error('No target line found in the response');
             }
         } catch (error) {
-            log.error(`Error parsing JSON for URL: ${request.url}`, error.message);
-            log.error('Error stack:', error.stack);
-            // Save the full body for inspection if JSON parsing fails
-            if (output) { // Only save if output was successfully read
-                await Actor.setValue(`response-body-${Date.now()}-parsing-error`, output, { contentType: 'text/plain' });
-            }
+            log.error('Error parsing JSON:', error);
         }
     },
 });
