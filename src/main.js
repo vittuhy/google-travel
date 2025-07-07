@@ -75,7 +75,15 @@ const crawler = new HttpCrawler({
     async requestHandler({ enqueueLinks, request, $, log, body }) {
         try {
             const output = body.toString();
+            log.info('Body type:', typeof body);
+            log.info('Output type:', typeof output);
+            log.info('Output length:', output.length);
+            log.info('Output preview:', output.substring(0, 100));
+            
             const lines = output.split('\n');
+            log.info('Number of lines:', lines.length);
+            log.info('First few lines:', lines.slice(0, 3));
+            
             const targetLine = lines.find(line => line.trim().startsWith('['));
             if (targetLine) {
                 const data = JSON.parse(targetLine);
@@ -104,7 +112,8 @@ const crawler = new HttpCrawler({
                 log.error('No target line found in the response');
             }
         } catch (error) {
-            log.error('Error parsing JSON:', error);
+            log.error('Error parsing JSON:', error.message);
+            log.error('Error details:', error);
         }
     },
 });
