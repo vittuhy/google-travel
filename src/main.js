@@ -75,7 +75,15 @@ const crawler = new HttpCrawler({
     async requestHandler({ request, log, body }) { // Removed unused enqueueLinks and $
         let output; // Declare output here
         try {
-            output = body.toString(); // Assign output here
+            // Handle the case where body.toString() returns an object with character indices
+            const bodyStr = body.toString();
+            if (typeof bodyStr === 'object' && bodyStr !== null) {
+                // Convert the character-indexed object back to a string
+                output = Object.values(bodyStr).join('');
+            } else {
+                output = bodyStr;
+            }
+            
             log.info('Response length:', output.length);
             log.info('Response starts with:', output.substring(0, 50));
             
