@@ -353,6 +353,7 @@
             "title": "Proxy Country Code",
             "type": "string",
             "description": "Country code for proxy location (e.g., 'US', 'GB', 'JP'). Leave empty to use proxies from any location.",
+            "editor": "textfield",
             "pattern": "^[A-Z]{2}$"
         }
     },
