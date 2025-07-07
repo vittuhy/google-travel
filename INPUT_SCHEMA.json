@@ -337,6 +337,7 @@
             "title": "Proxy Groups",
             "type": "array",
             "description": "List of proxy groups to use for requests. RESIDENTIAL proxies are recommended for better success rates.",
+            "editor": "select",
             "items": {
                 "type": "string",
                 "enum": [
