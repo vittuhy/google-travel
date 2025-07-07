@@ -77,13 +77,19 @@ const crawler = new HttpCrawler({
         try {
             // Handle the case where body.toString() returns an object with character indices
             const bodyStr = body.toString();
+            log.info('BodyStr type:', typeof bodyStr);
+            log.info('BodyStr is object:', typeof bodyStr === 'object');
+            
             if (typeof bodyStr === 'object' && bodyStr !== null) {
                 // Convert the character-indexed object back to a string
                 output = Object.values(bodyStr).join('');
+                log.info('Converted from object to string');
             } else {
                 output = bodyStr;
+                log.info('Used bodyStr directly');
             }
             
+            log.info('Final output type:', typeof output);
             log.info('Response length:', output.length);
             log.info('Response starts with:', output.substring(0, 50));
             
