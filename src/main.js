@@ -75,23 +75,11 @@ const crawler = new HttpCrawler({
     async requestHandler({ enqueueLinks, request, $, log, body }) {
         try {
             const output = body.toString();
-            log.info('Response length:', output.length);
-            log.info('Response preview:', output.substring(0, 200));
-            
             const lines = output.split('\n');
-            log.info('Number of lines:', lines.length);
-            
             const targetLine = lines.find(line => line.trim().startsWith('['));
             if (targetLine) {
-                log.info('Found target line, length:', targetLine.length);
-                log.info('Target line preview:', targetLine.substring(0, 100));
-                
                 const data = JSON.parse(targetLine);
-                log.info('Parsed data structure:', JSON.stringify(data, null, 2).substring(0, 500));
-                
                 const data2 = JSON.parse(data[0][2]);
-                log.info('Parsed data2 structure:', JSON.stringify(data2, null, 2).substring(0, 500));
-                
                 const prices = (data2[2][21] || []).map(row => ({
                     provider: row[0][0],
                     otaUrl: row[0][2],
@@ -114,12 +102,9 @@ const crawler = new HttpCrawler({
                 });
             } else {
                 log.error('No target line found in the response');
-                log.info('All lines:', lines.map((line, i) => `${i}: ${line.substring(0, 50)}`));
             }
         } catch (error) {
-            log.error('Error parsing JSON:', error.message);
-            log.error('Error stack:', error.stack);
-            log.info('Full response for debugging:', body.toString());
+            log.error('Error parsing JSON:', error);
         }
     },
 });
