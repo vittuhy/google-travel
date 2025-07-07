@@ -1,19 +1,21 @@
 {
     "title": "Google Travel Hotel Scraper",
+    "description": "Scrape hotel pricing data from Google Travel for a specific hotel entity. Enter the hotel's entity ID, check-in date, and other parameters to get pricing information.",
     "type": "object",
     "schemaVersion": 1,
     "properties": {
         "entityId": {
             "title": "Hotel Entity ID",
             "type": "string",
-            "description": "The Google Travel entity ID of the hotel/facility to scrape",
+            "description": "The Google Travel entity ID of the hotel/facility to scrape. You can find this in the URL when viewing a hotel on Google Travel.",
             "editor": "textfield",
-            "pattern": "^[A-Za-z0-9_-]+$"
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "prefill": "ChIJP3Sa8ziYEmsRUKgyFmh9AQM"
         },
         "currency": {
             "title": "Currency",
             "type": "string",
-            "description": "Currency code for pricing",
+            "description": "Currency code for pricing. Select the currency you want to see prices in.",
             "enum": [
                 "USD",
                 "EUR",
@@ -295,13 +297,14 @@
         "checkInDate": {
             "title": "Check-in Date",
             "type": "string",
-            "description": "Check-in date in YYYY-MM-DD format",
-            "editor": "date"
+            "description": "Check-in date in YYYY-MM-DD format (e.g., 2025-05-19). This is the date you want to check in to the hotel.",
+            "editor": "textfield",
+            "prefill": "2025-05-19"
         },
         "days": {
             "title": "Length of Stay",
             "type": "integer",
-            "description": "Number of days to stay",
+            "description": "Number of days to stay at the hotel. The scraper will calculate the check-out date automatically.",
             "minimum": 1,
             "maximum": 30,
             "default": 1
@@ -309,16 +312,15 @@
         "adults": {
             "title": "Number of Adults",
             "type": "integer",
-            "description": "Number of adult guests",
+            "description": "Number of adult guests for the booking. This affects pricing calculations.",
             "minimum": 1,
             "maximum": 10,
             "default": 1
         },
-
         "maxRequestRetries": {
             "title": "Max Request Retries",
             "type": "integer",
-            "description": "Maximum number of retries for failed requests",
+            "description": "Maximum number of retries for failed requests. Increase this if you experience network issues.",
             "minimum": 0,
             "maximum": 10,
             "default": 3
@@ -326,7 +328,7 @@
         "requestTimeoutSecs": {
             "title": "Request Timeout (seconds)",
             "type": "integer",
-            "description": "Timeout for each request in seconds",
+            "description": "Timeout for each request in seconds. Increase this if requests are timing out.",
             "minimum": 10,
             "maximum": 300,
             "default": 60
@@ -334,7 +336,7 @@
         "proxyGroups": {
             "title": "Proxy Groups",
             "type": "array",
-            "description": "List of proxy groups to use (e.g., ['RESIDENTIAL', 'DATACENTER'])",
+            "description": "List of proxy groups to use for requests. RESIDENTIAL proxies are recommended for better success rates.",
             "items": {
                 "type": "string",
                 "enum": [
@@ -349,7 +351,7 @@
         "proxyCountryCode": {
             "title": "Proxy Country Code",
             "type": "string",
-            "description": "Country code for proxy location (e.g., 'US', 'GB', 'JP'). Leave empty for any location.",
+            "description": "Country code for proxy location (e.g., 'US', 'GB', 'JP'). Leave empty to use proxies from any location.",
             "pattern": "^[A-Z]{2}$"
         }
     },
