@@ -112,59 +112,64 @@ const crawler = new HttpCrawler({
         log.info(`Processing request for entity: ${entityId} (${requestCheckInDate} to ${requestCheckOutDate})`);
         
         try {
-            const responseText = body.toString();
+            const output = body.toString();
+            const lines = output.split('\n');
+            const targetLine = lines.find(line => line.trim().startsWith('['));
             
-            // Log response length for debugging
-            log.info(`Response received, length: ${responseText.length} characters`);
-            
-            // Try to parse the response
-            let parsedData = null;
-            try {
-                // Google's batch execute API returns data in a specific format
-                // The response might be wrapped in )]}' or similar
-                let cleanResponse = responseText;
-                if (cleanResponse.startsWith(")]}'")) {
-                    cleanResponse = cleanResponse.substring(4);
-                }
+            if (targetLine) {
+                const data = JSON.parse(targetLine);
+                const data2 = JSON.parse(data[0][2]);
+                const prices = (data2[2][21] || []).map(row => ({
+                    provider: row[0][0],
+                    otaUrl: row[0][2],
+                    isOfficial: row[0][5],
+                    price: parseInt(row[12][4][2]),
+                    price2: parseInt(row[12][5][2]),
+                }));
                 
-                // Try to parse as JSON
-                const jsonData = JSON.parse(cleanResponse);
+                log.info('data2[2][21][0]', data2[2][21][0]);
+                log.info('prices', prices);
                 
-                // Extract the actual data from Google's response structure
-                if (jsonData && Array.isArray(jsonData) && jsonData.length > 0) {
-                    parsedData = jsonData[0];
-                } else {
-                    parsedData = jsonData;
-                }
-            } catch (parseError) {
-                log.warning('Failed to parse response as JSON, storing raw response');
-                parsedData = {
-                    rawResponse: responseText,
-                    parseError: parseError.message
+                // Prepare the output data
+                const outputData = {
+                    entityId,
+                    currency,
+                    checkInDate: requestCheckInDate,
+                    checkOutDate: requestCheckOutDate,
+                    days,
+                    adults,
+                    scrapedAt: new Date().toISOString(),
+                    requestUrl: request.url,
+                    prices,
+                    adults: input.adults,
+                    currency: data2[1][3],
+                    checkInDate: data2[1][4][0].join('-'),
+                    checkOutDate: data2[1][4][1].join('-')
                 };
+                
+                // Save to dataset
+                await Dataset.pushData(outputData);
+                
+                log.info('Data successfully saved to dataset');
+            } else {
+                log.error('No target line found in the response');
+                
+                // Save error information
+                await Dataset.pushData({
+                    entityId,
+                    currency,
+                    checkInDate: requestCheckInDate,
+                    checkOutDate: requestCheckOutDate,
+                    days,
+                    adults,
+                    scrapedAt: new Date().toISOString(),
+                    requestUrl: request.url,
+                    error: 'No target line found in the response',
+                    rawResponse: output
+                });
             }
-            
-            // Prepare the output data
-            const outputData = {
-                entityId,
-                currency,
-                checkInDate: requestCheckInDate,
-                checkOutDate: requestCheckOutDate,
-                days,
-                adults,
-                scrapedAt: new Date().toISOString(),
-                requestUrl: request.url,
-                responseData: parsedData,
-                rawResponseLength: responseText.length
-            };
-            
-            // Save to dataset
-            await Dataset.pushData(outputData);
-            
-            log.info('Data successfully saved to dataset');
-            
         } catch (error) {
-            log.error('Error processing response', { error: error.message });
+            log.error('Error parsing JSON:', error);
             
             // Save error information
             await Dataset.pushData({
