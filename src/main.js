@@ -73,9 +73,14 @@ const crawler = new HttpCrawler({
     maxRequestRetries,
     requestHandlerTimeoutSecs: requestTimeoutSecs,
     async requestHandler({ request, log, body }) { // Removed unused enqueueLinks and $
+        let output; // Declare output here
         try {
-            const output = body.toString();
+            output = body.toString(); // Assign output here
+            log.info('Response length:', output.length);
+            log.info('Response starts with:', output.substring(0, 50));
+            
             const lines = output.split('\n');
+            log.info('Number of lines:', lines.length);
             const targetLine = lines.find(line => line.trim().startsWith('['));
             if (targetLine) {
                 const data = JSON.parse(targetLine);
@@ -91,20 +96,27 @@ const crawler = new HttpCrawler({
                 log.info('prices', prices);
                 await Dataset.pushData({
                     prices,
-                    adults: adults, // Used 'adults' from input destructuring
+                    adults: adults,
                     currency: data2[1][3],
                     checkInDate: data2[1][4][0].join('-'),
                     checkOutDate: data2[1][4][1].join('-'),
-                    entityId: entityId, // Added entityId to output
-                    days: days, // Added days to output
-                    scrapedAt: new Date().toISOString(), // Added scrapedAt to output
-                    requestUrl: request.url // Added requestUrl to output
+                    entityId: entityId,
+                    days: days,
+                    scrapedAt: new Date().toISOString(),
+                    requestUrl: request.url
                 });
             } else {
-                log.error('No target line found in the response');
+                log.error('No target line found in the response for URL:', request.url);
+                // Save the full body for inspection if no targetLine is found
+                await Actor.setValue(`response-body-${Date.now()}-no-target-line`, output, { contentType: 'text/plain' });
             }
         } catch (error) {
-            log.error('Error parsing JSON:', error);
+            log.error(`Error parsing JSON for URL: ${request.url}`, error.message);
+            log.error('Error stack:', error.stack);
+            // Save the full body for inspection if JSON parsing fails
+            if (output) { // Only save if output was successfully read
+                await Actor.setValue(`response-body-${Date.now()}-parsing-error`, output, { contentType: 'text/plain' });
+            }
         }
     },
 });
