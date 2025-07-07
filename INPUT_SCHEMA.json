@@ -292,7 +292,7 @@
                 "Ethiopian Birr",
                 "Somali Shilling"
             ],
-            "default": "USD"
+            "prefill": "USD"
         },
         "checkInDate": {
             "title": "Check-in Date",
@@ -307,7 +307,7 @@
             "description": "Number of days to stay at the hotel. The scraper will calculate the check-out date automatically.",
             "minimum": 1,
             "maximum": 30,
-            "default": 1
+            "prefill": 1
         },
         "adults": {
             "title": "Number of Adults",
@@ -333,28 +333,12 @@
             "maximum": 300,
             "default": 60
         },
-        "proxyGroups": {
-            "title": "Proxy Groups",
-            "type": "array",
-            "description": "List of proxy groups to use for requests. RESIDENTIAL proxies are recommended for better success rates.",
-            "editor": "select",
-            "items": {
-                "type": "string",
-                "enum": [
-                    "RESIDENTIAL",
-                    "DATACENTER",
-                    "MOBILE",
-                    "SERPSERP"
-                ]
-            },
-            "default": ["RESIDENTIAL"]
-        },
-        "proxyCountryCode": {
-            "title": "Proxy Country Code",
-            "type": "string",
-            "description": "Country code for proxy location (e.g., 'US', 'GB', 'JP'). Leave empty to use proxies from any location.",
-            "editor": "textfield",
-            "pattern": "^[A-Z]{2}$"
+        "proxyConfiguration": {
+            "title": "Proxy configuration",
+            "type": "object",
+            "description": "Select proxies to be used by your crawler.",
+            "prefill": { "useApifyProxy": true },
+            "editor": "proxy"
         }
     },
     "required": [

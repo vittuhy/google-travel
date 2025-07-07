@@ -28,14 +28,13 @@ if (!input.adults) {
 // Set defaults for optional inputs
 const {
     entityId,
-    currency = 'USD',
+    currency,
     checkInDate,
     days,
     adults,
     maxRequestRetries = 3,
     requestTimeoutSecs = 60,
-    proxyGroups = ['RESIDENTIAL'],
-    proxyCountryCode
+    proxyConfiguration
 } = input;
 
 // Validate date format
@@ -98,14 +97,11 @@ for (const checkInCheckOut of checkInCheckOuts) {
 }
 
 // Create proxy configuration
-const proxyConfiguration = await Actor.createProxyConfiguration({
-    groups: proxyGroups,
-    countryCode: proxyCountryCode
-});
+const proxyConfig = await Actor.createProxyConfiguration(proxyConfiguration);
 
 // Create crawler
 const crawler = new HttpCrawler({
-    proxyConfiguration,
+    proxyConfiguration: proxyConfig,
     maxRequestRetries,
     requestHandlerTimeoutSecs: requestTimeoutSecs,
     maxConcurrency: 1,
