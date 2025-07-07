@@ -296,8 +296,7 @@
             "title": "Check-in Date",
             "type": "string",
             "description": "Check-in date in YYYY-MM-DD format",
-            "editor": "date",
-            "format": "date"
+            "editor": "date"
         },
         "days": {
             "title": "Length of Stay",
