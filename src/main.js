@@ -72,10 +72,10 @@ const crawler = new HttpCrawler({
     proxyConfiguration: proxyConfig,
     maxRequestRetries,
     requestHandlerTimeoutSecs: requestTimeoutSecs,
-    async requestHandler({ enqueueLinks, request, $, log, body }) {
+    async requestHandler({ enqueueLinks, request, $, log, response }) {
         try {
-            const output = body.toString();
-            log.info('Body type:', typeof body);
+            const output = await response.text();
+            log.info('Response type:', typeof response);
             log.info('Output type:', typeof output);
             log.info('Output length:', output.length);
             log.info('Output preview:', output.substring(0, 100));
