@@ -101,6 +101,9 @@ const crawler = new HttpCrawler({
         if (targetLine) {
             const data = JSON.parse(targetLine);
             const data2 = JSON.parse(data[0][2]);
+            log.info('data2', JSON.stringify(data2, null, 2));
+            log.info('data2[2]', JSON.stringify(data2?.[2], null, 2));
+            log.info('data2[2][21]', JSON.stringify(data2?.[2]?.[21], null, 2));
             const prices = (data2?.[2]?.[21] || []).map(row => ({
                 provider: row?.[0]?.[0],
                 otaUrl: row?.[0]?.[2],
