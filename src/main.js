@@ -123,7 +123,7 @@ const crawler = new HttpCrawler({
                 entityId: entityId,
                 days: days
             });
-            await Actor.setValue('data2-debug.json', data2, { contentType: 'application/json' });
+            await Actor.setValue('data2-debug.json', JSON.stringify(data2, null, 2), { contentType: 'application/json' });
         } else {
             log.error('No target line found in the response');
         }
