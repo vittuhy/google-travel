@@ -2,6 +2,7 @@
 import { Actor } from 'apify';
 // Crawlee - web scraping and browser automation library (Read more at https://crawlee.dev)
 import { HttpCrawler, Dataset } from 'crawlee';
+import fs from 'fs';
 
 await Actor.init();
 
@@ -122,6 +123,7 @@ const crawler = new HttpCrawler({
                 entityId: entityId,
                 days: days
             });
+            await Actor.setValue('data2-debug.json', data2, { contentType: 'application/json' });
         } else {
             log.error('No target line found in the response');
         }
