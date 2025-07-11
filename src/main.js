@@ -92,39 +92,35 @@ const crawler = new HttpCrawler({
     maxRequestRetries,
     requestHandlerTimeoutSecs: requestTimeoutSecs,
     async requestHandler({ request, log, body }) {
-        try {
-            const output = body.toString();
-            log.info('Response length:', output.length);
-            log.info('Response starts with:', output.substring(0, 50));
-            const lines = output.split('\n');
-            log.info('Number of lines:', lines.length);
-            const targetLine = lines.find(line => line.trim().startsWith('['));
-            if (targetLine) {
-                const data = JSON.parse(targetLine);
-                const data2 = JSON.parse(data[0][2]);
-                const prices = (data2[2][21] || []).map(row => ({
-                    provider: row[0][0],
-                    otaUrl: row[0][2],
-                    isOfficial: row[0][5],
-                    price: parseInt(row[12][4][2]),
-                    price2: parseInt(row[12][5][2]),
-                }));
-                log.info('data2[2][21][0]', data2[2][21][0]);
-                log.info('prices', prices);
-                await Dataset.pushData({
-                    prices,
-                    adults: adults,
-                    currency: data2[1][3],
-                    checkInDate: data2[1][4][0].join('-'),
-                    checkOutDate: data2[1][4][1].join('-'),
-                    entityId: entityId,
-                    days: days
-                });
-            } else {
-                log.error('No target line found in the response');
-            }
-        } catch (error) {
-            log.error('Error parsing JSON:', error);
+        const output = body.toString();
+        log.info('Response length:', output.length);
+        log.info('Response starts with:', output.substring(0, 50));
+        const lines = output.split('\n');
+        log.info('Number of lines:', lines.length);
+        const targetLine = lines.find(line => line.trim().startsWith('['));
+        if (targetLine) {
+            const data = JSON.parse(targetLine);
+            const data2 = JSON.parse(data[0][2]);
+            const prices = (data2?.[2]?.[21] || []).map(row => ({
+                provider: row?.[0]?.[0],
+                otaUrl: row?.[0]?.[2],
+                isOfficial: row?.[0]?.[5],
+                price: parseInt(row?.[12]?.[4]?.[2]),
+                price2: parseInt(row?.[12]?.[5]?.[2]),
+            }));
+            log.info('data2[2][21][0]', data2?.[2]?.[21]?.[0]);
+            log.info('prices', prices);
+            await Dataset.pushData({
+                prices,
+                adults: adults,
+                currency: data2?.[1]?.[3],
+                checkInDate: data2?.[1]?.[4]?.[0]?.join('-'),
+                checkOutDate: data2?.[1]?.[4]?.[1]?.join('-'),
+                entityId: entityId,
+                days: days
+            });
+        } else {
+            log.error('No target line found in the response');
         }
     },
 });
