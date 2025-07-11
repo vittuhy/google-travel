@@ -94,6 +94,7 @@ const crawler = new HttpCrawler({
     requestHandlerTimeoutSecs: requestTimeoutSecs,
     async requestHandler({ request, log, body }) {
         const output = body.toString();
+        console.log('RAW RESPONSE:', output);
         log.info('Response length:', output.length);
         log.info('Response starts with:', output.substring(0, 50));
         const lines = output.split('\n');
