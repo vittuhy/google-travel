@@ -1,13 +1,14 @@
 # Google Travel Hotel Price Scraper
 
-A powerful Apify actor that scrapes hotel pricing data from Google Travel. This actor extracts real-time pricing information for hotels across multiple dates and provides comprehensive price comparisons from various booking providers.
+A powerful Apify actor that scrapes hotel pricing data from Google Travel for a specific hotel. This actor extracts real-time pricing information for a given hotel across multiple dates and provides comprehensive price comparisons from various booking providers.
 
 ## 🏨 What it does
 
-This actor scrapes Google Travel's hotel pricing data by:
+This actor scrapes Google Travel's hotel pricing data for a specific hotel by:
 
+- **Single hotel focus**: Scrapes pricing data for one specific hotel (identified by entity ID)
 - **Multi-date scraping**: Generates price data for consecutive days starting from your check-in date
-- **Provider comparison**: Extracts prices from multiple booking providers (OTAs)
+- **Provider comparison**: Extracts prices from multiple booking providers (OTAs) for the same hotel
 - **Real-time data**: Gets current pricing directly from Google Travel's API
 - **Comprehensive output**: Provides detailed pricing information including provider names, URLs, and official vs third-party rates
 
@@ -41,7 +42,7 @@ The actor outputs structured data for each date range:
 | `days` | integer | ✅ | Number of consecutive days to scrape (minimum: 1) |
 | `adults` | integer | ✅ | Number of adult guests (minimum: 1) |
 | `currency` | string | ✅ | Currency code (e.g., USD, EUR, JPY) |
-| `entity` | string | ✅ | Google Travel entity ID (hotel identifier) |
+| `entity` | string | ✅ | Google Travel entity ID (specific hotel identifier) |
 | `proxyConfig` | object | ❌ | Proxy configuration settings |
 
 ### Proxy Configuration
@@ -56,7 +57,7 @@ The actor outputs structured data for each date range:
 
 ## 🆔 How to Find Entity IDs
 
-Entity IDs are unique identifiers for hotels in Google Travel. Here's how to find them:
+Entity IDs are unique identifiers for specific hotels in Google Travel. You need to find the entity ID for the exact hotel you want to scrape. Here's how to find them:
 
 ### Method 1: From Google Travel URL
 1. Go to [Google Travel](https://www.google.com/travel/hotels)
@@ -117,11 +118,11 @@ https://www.google.com/travel/hotels/entity/ChgIw-i9jd_587w3GgwvZy8xcHR4cWI4OTIQ
 
 ## 📈 Use Cases
 
-- **Price monitoring**: Track hotel prices over time
-- **Competitive analysis**: Compare prices across different booking platforms
-- **Travel planning**: Find the best rates for your dates
-- **Market research**: Analyze pricing trends in the hospitality industry
-- **Revenue optimization**: Help hotels understand their competitive positioning
+- **Price monitoring**: Track prices for a specific hotel over time
+- **Competitive analysis**: Compare prices across different booking platforms for the same hotel
+- **Travel planning**: Find the best rates for your preferred hotel on specific dates
+- **Market research**: Analyze pricing trends for individual hotels
+- **Revenue optimization**: Help hotels understand their competitive positioning against other providers
 
 ## 🔒 Rate Limiting & Best Practices
 
@@ -156,14 +157,3 @@ The actor supports all major ISO 4217 currency codes including:
 - **Proxy usage**: Recommended for production use to avoid IP blocks
 - **Data accuracy**: Prices are real-time but may vary based on availability
 
-## 🤝 Contributing
-
-Feel free to submit issues and enhancement requests!
-
-## 📄 License
-
-This project is licensed under the ISC License.
-
----
-
-**Note**: This actor is designed for legitimate business use cases. Please respect Google's terms of service and use responsibly.
