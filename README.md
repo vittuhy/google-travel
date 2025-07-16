@@ -1,146 +1,169 @@
-# Google Travel Hotel Scraper
+# Google Travel Hotel Price Scraper
 
-This Apify Actor scrapes hotel pricing and availability data from Google Travel using their internal API.
+A powerful Apify actor that scrapes hotel pricing data from Google Travel. This actor extracts real-time pricing information for hotels across multiple dates and provides comprehensive price comparisons from various booking providers.
 
-## Features
+## 🏨 What it does
 
-- Scrapes hotel pricing and availability from Google Travel
-- Supports multiple currencies (100+ currencies available)
-- Configurable check-in/check-out dates
-- Adjustable number of guests (adults and children)
-- Multiple room support
-- Language localization
-- Built-in proxy support via Apify
-- Comprehensive error handling and logging
+This actor scrapes Google Travel's hotel pricing data by:
 
-## Input Parameters
+- **Multi-date scraping**: Generates price data for consecutive days starting from your check-in date
+- **Provider comparison**: Extracts prices from multiple booking providers (OTAs)
+- **Real-time data**: Gets current pricing directly from Google Travel's API
+- **Comprehensive output**: Provides detailed pricing information including provider names, URLs, and official vs third-party rates
+
+## 📊 Output Format
+
+The actor outputs structured data for each date range:
+
+```json
+{
+  "prices": [
+    {
+      "provider": "Booking.com",
+      "otaUrl": "https://booking.com/hotel/...",
+      "isOfficial": false,
+      "price": 150,
+      "price2": 180
+    }
+  ],
+  "adults": 2,
+  "currency": "USD",
+  "checkInDate": "2025-07-20",
+  "checkOutDate": "2025-07-21"
+}
+```
+
+## 🔧 Input Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `entityId` | String | Yes | The Google Travel entity ID of the hotel/facility to scrape |
-| `currency` | String | Yes | Currency code for pricing (e.g., USD, EUR, JPY) |
-| `checkInDate` | String | Yes | Check-in date in YYYY-MM-DD format |
-| `days` | Integer | Yes | Number of days to stay (1-30) |
-| `adults` | Integer | Yes | Number of adult guests (1-10) |
-| `maxRequestRetries` | Integer | No | Maximum retries for failed requests (default: 3) |
-| `requestTimeoutSecs` | Integer | No | Request timeout in seconds (default: 60) |
-| `proxyGroups` | Array | No | Proxy groups to use (default: ["RESIDENTIAL"]) |
-| `proxyCountryCode` | String | No | Country code for proxy location (e.g., "US", "GB") |
+| `checkInDate` | string | ✅ | Check-in date in YYYY-MM-DD format |
+| `days` | integer | ✅ | Number of consecutive days to scrape (minimum: 1) |
+| `adults` | integer | ✅ | Number of adult guests (minimum: 1) |
+| `currency` | string | ✅ | Currency code (e.g., USD, EUR, JPY) |
+| `entity` | string | ✅ | Google Travel entity ID (hotel identifier) |
+| `proxyConfig` | object | ❌ | Proxy configuration settings |
 
-## Output
-
-The Actor outputs data to the default dataset with the following structure:
+### Proxy Configuration
 
 ```json
 {
-    "entityId": "CgoI4L-j9bjz1IVpEAE",
-    "currency": "USD",
-    "checkInDate": "2025-05-19",
-    "checkOutDate": "2025-05-20",
-    "days": 1,
-    "adults": 1,
-    "scrapedAt": "2025-01-27T10:30:00.000Z",
-    "requestUrl": "https://www.google.com/_/TravelFrontendUi/data/batchexecute?...",
-    "responseData": { /* Parsed Google API response */ },
-    "rawResponseLength": 12345
+  "useApifyProxy": true,
+  "apifyProxyGroups": ["RESIDENTIAL"],
+  "apifyProxyCountry": "US"
 }
 ```
 
-## How to Use
+## 🆔 How to Find Entity IDs
 
-1. **Deploy the Actor** to your Apify account
-2. **Configure the input parameters**:
-   - Set the `entityId` (found in Google Travel hotel URLs)
-   - Choose your preferred `currency`
-   - Set the `checkInDate`
-   - Adjust other parameters as needed
-3. **Run the Actor**
-4. **Download the results** from the dataset
+Entity IDs are unique identifiers for hotels in Google Travel. Here's how to find them:
 
-## Finding Hotel Entity IDs
+### Method 1: From Google Travel URL
+1. Go to [Google Travel](https://www.google.com/travel/hotels)
+2. Search for your desired hotel
+3. Click on the hotel to view its page
+4. Look at the URL - the entity ID is in the path:
 
-To find a hotel's entity ID:
-1. Go to Google Travel (https://www.google.com/travel)
-2. Search for a hotel
-3. Click on the hotel
-4. Look at the URL: `https://www.google.com/travel/hotels/entity/{ENTITY_ID}`
-5. Copy the entity ID from the URL
+```
+https://www.google.com/travel/hotels/entity/ChgIw-i9jd_587w3GgwvZy8xcHR4cWI4OTIQAQ
+                                                      ↑
+                                              Entity ID here
+```
 
-## Example Input
+**Example**: From the URL `https://www.google.com/travel/hotels/entity/ChgIw-i9jd_587w3GgwvZy8xcHR4cWI4OTIQAQ`, the entity ID is `ChgIw-i9jd_587w3GgwvZy8xcHR4cWI4OTIQAQ`
 
+### Method 2: Using Browser Developer Tools
+1. Open Google Travel in your browser
+2. Navigate to a hotel page
+3. Open Developer Tools (F12)
+4. Go to Network tab
+5. Look for API requests containing the entity ID
+6. The entity ID will appear in request URLs or response data
+
+### Method 3: From Google Maps
+1. Search for a hotel on Google Maps
+2. Click on the hotel listing
+3. Look for the "View on Google Travel" link
+4. Follow the link to get the entity ID from the URL
+
+## 🚀 Usage Examples
+
+### Basic Usage
 ```json
 {
-    "entityId": "CgoI4L-j9bjz1IVpEAE",
-    "currency": "USD",
-    "checkInDate": "2025-05-19",
-    "days": 2,
-    "adults": 2
+  "checkInDate": "2025-07-20",
+  "days": 3,
+  "adults": 2,
+  "currency": "USD",
+  "entity": "ChgIw-i9jd_587w3GgwvZy8xcHR4cWI4OTIQAQ"
 }
 ```
 
-## Supported Currencies
+### With Proxy Configuration
+```json
+{
+  "checkInDate": "2025-07-20",
+  "days": 5,
+  "adults": 1,
+  "currency": "EUR",
+  "entity": "ChgIw-i9jd_587w3GgwvZy8xcHR4cWI4OTIQAQ",
+  "proxyConfig": {
+    "useApifyProxy": true,
+    "apifyProxyGroups": ["RESIDENTIAL"],
+    "apifyProxyCountry": "DE"
+  }
+}
+```
 
-The Actor supports 100+ currencies including:
+## 📈 Use Cases
+
+- **Price monitoring**: Track hotel prices over time
+- **Competitive analysis**: Compare prices across different booking platforms
+- **Travel planning**: Find the best rates for your dates
+- **Market research**: Analyze pricing trends in the hospitality industry
+- **Revenue optimization**: Help hotels understand their competitive positioning
+
+## 🔒 Rate Limiting & Best Practices
+
+- **Respectful scraping**: The actor uses proper delays and headers
+- **Proxy rotation**: Use Apify Proxy to avoid IP blocks
+- **Session management**: Maintains cookies for better success rates
+- **Error handling**: Gracefully handles API errors and timeouts
+
+## 🛠️ Technical Details
+
+- **Built with**: Apify SDK v3.2.6, Crawlee v3.11.5
+- **Target**: Google Travel's internal API endpoints
+- **Data format**: JSON with structured pricing information
+- **Rate limiting**: Built-in delays and proxy support
+- **Error recovery**: Automatic retry logic for failed requests
+
+## 📋 Supported Currencies
+
+The actor supports all major ISO 4217 currency codes including:
 - USD (US Dollar)
 - EUR (Euro)
 - GBP (British Pound)
 - JPY (Japanese Yen)
 - CAD (Canadian Dollar)
 - AUD (Australian Dollar)
-- And many more...
+- And 70+ more currencies
 
+## ⚠️ Important Notes
 
+- **Entity ID validity**: Ensure your entity ID is current and valid
+- **Date ranges**: Avoid scraping too many consecutive days to prevent rate limiting
+- **Proxy usage**: Recommended for production use to avoid IP blocks
+- **Data accuracy**: Prices are real-time but may vary based on availability
 
-## Error Handling
+## 🤝 Contributing
 
-The Actor includes comprehensive error handling:
-- Invalid input validation
-- Network request retries
-- Response parsing error recovery
-- Failed request logging
-- All errors are saved to the dataset for debugging
+Feel free to submit issues and enhancement requests!
 
-## Rate Limiting and Proxies
+## 📄 License
 
-- The Actor uses Apify's built-in proxy support
-- Configure proxy settings in your Apify account
-- Built-in request retry mechanism
-- Configurable timeouts
+This project is licensed under the ISC License.
 
-### Proxy Configuration
+---
 
-The Actor uses Apify's standard proxy configuration:
-
-```json
-{
-    "proxyGroups": ["RESIDENTIAL"],
-    "proxyCountryCode": "US"
-}
-```
-
-**Available Proxy Groups:**
-- `RESIDENTIAL` - Residential IP addresses (most reliable)
-- `DATACENTER` - Datacenter IP addresses (faster, cheaper)
-- `MOBILE` - Mobile IP addresses
-- `SERPSERP` - Specialized for search engines
-
-**Country Codes:**
-- Use ISO 3166-1 alpha-2 country codes (e.g., "US", "GB", "JP")
-- Leave empty to use any available location
-
-## Development
-
-To run this Actor locally:
-
-```bash
-npm install
-npm start
-```
-
-## Legal Notice
-
-This Actor is for educational and research purposes. Please ensure you comply with Google's Terms of Service and respect rate limits when using this tool.
-
-## Support
-
-For support, please refer to the Apify documentation or contact Apify support.
+**Note**: This actor is designed for legitimate business use cases. Please respect Google's terms of service and use responsibly.

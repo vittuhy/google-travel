@@ -2,140 +2,193 @@
 import { Actor } from 'apify';
 // Crawlee - web scraping and browser automation library (Read more at https://crawlee.dev)
 import { HttpCrawler, Dataset } from 'crawlee';
-import fs from 'fs';
 
 await Actor.init();
 
-let input = await Actor.getInput();
+/**
+ * @typedef {object} Input
+ * @property {string} checkInDate - The check-in date in YYYY-MM-DD format (e.g., '2025-07-20').
+ * @property {number} days - The number of days for the stay.
+ * @property {number} adults - The number of adult guests.
+ * @property {string} currency - The currency code (e.g., 'JPY', 'USD').
+ * @property {string} entity - The Google Travel entity ID (e.g., 'CgsIx6il8vyxnYHRARAB').
+ * @property {object} proxyConfig - Proxy configuration for the actor.
+ * @property {boolean} [proxyConfig.useApifyProxy] - Whether to use Apify Proxy.
+ * @property {string[]} [proxyConfig.apifyProxyGroups] - Array of Apify Proxy groups.
+ * @property {string} [proxyConfig.apifyProxyCountry] - The country for Apify Proxy.
+ */
 
-// For local testing, use default input if none provided
-if (!input) {
-    input = {
-        entityId: "CgsIy52q7rmXvY-BARAB",
-        checkInDate: "2025-07-03",
-        currency: "EUR",
-        days: 3,
-        adults: 1,
-        maxRequestRetries: 3,
-        requestTimeoutSecs: 60,
-        proxyConfiguration: {
-            useApifyProxy: true,
-            apifyProxyGroups: ["RESIDENTIAL"],
-            apifyProxyCountry: "US"
-        }
-    };
-    console.log('Using default input for local testing');
-}
+/** @type {Input} */
+const input = (await Actor.getInput()) || {
+    // Default values for local development if no input is provided via Apify Console.
+    // Ensure these values are valid for your testing!
+    checkInDate: '2025-07-20', // Example: Use a date in the future
+    days: 3,
+    adults: 2,
+    currency: 'USD',
+    entity: 'CgsIx6il8vyxnYHRARAB', // <--- ENSURE THIS IS A VALID ENTITY ID FOR TESTING
+    proxyConfig: {
+        useApifyProxy: true,
+        apifyProxyGroups: ['RESIDENTIAL'],
+        apifyProxyCountry: 'US', // Set a country if needed
+    },
+};
 
-// Validate required inputs
-if (!input.entityId) {
-    throw new Error('entityId is required');
-}
-if (!input.checkInDate) {
-    throw new Error('checkInDate is required');
-}
-if (!input.currency) {
-    throw new Error('currency is required');
-}
-if (!input.days) {
-    throw new Error('days is required');
-}
-if (!input.adults) {
-    throw new Error('adults is required');
+// Log the input to confirm it's correct right after retrieval
+console.log('Actor Input:', input);
+if (!input.entity) {
+    throw new Error('Input "entity" is missing or undefined. Please provide a valid entity ID in the Actor input.');
 }
 
-// Set defaults for optional inputs
-const {
-    entityId,
-    currency,
-    checkInDate,
-    days,
-    adults,
-    maxRequestRetries = 3,
-    requestTimeoutSecs = 60,
-    proxyConfiguration
-} = input;
+/**
+ * Generates an array of check-in and check-out date ranges.
+ * @param {string} startDateStr - The starting date in YYYY-MM-DD format.
+ * @param {number} numberOfDays - The number of consecutive days to generate ranges for.
+ * @returns {{ start: string, end: string }[]} An array of objects, each containing formatted start and end dates.
+ */
+function generateDateRanges(startDateStr, numberOfDays) {
+    const dateRanges = [];
+    let currentDate = new Date(startDateStr);
 
-function getCheckInCheckOuts(startDate, days) {
-    return Array.from({ length: days }, (_, i) => {
-        const date = new Date(startDate);
-        date.setDate(date.getDate() + i);
-        const endDate = new Date(date);
-        endDate.setDate(endDate.getDate() + 1);
-        return {
-            start: date.toISOString().split('T')[0].split('-').map(Number).join(','),
-            end: endDate.toISOString().split('T')[0].split('-').map(Number).join(',')
-        };
-    });
+    for (let i = 0; i < numberOfDays; i++) {
+        const nextDay = new Date(currentDate);
+        nextDay.setDate(currentDate.getDate() + 1);
+
+        const checkIn = currentDate.toISOString().split('T')[0];
+        const checkOut = nextDay.toISOString().split('T')[0];
+
+        // Format: YYYY,M,D (e.g., 2025,7,20) as required by Google's API
+        const formattedCheckIn = checkIn.split('-').map(Number).join(',');
+        const formattedCheckOut = checkOut.split('-').map(Number).join(',');
+
+        dateRanges.push({ start: formattedCheckIn, end: formattedCheckOut });
+
+        currentDate = nextDay; // Move to the next day for the next iteration
+    }
+    return dateRanges;
 }
 
-const checkInCheckOuts = getCheckInCheckOuts(checkInDate, days);
-console.log('checkInCheckOuts', checkInCheckOuts);
+const checkInCheckOutRanges = generateDateRanges(input.checkInDate, input.days);
+console.log('Generated Check-in/Check-out Ranges:', checkInCheckOutRanges);
 
 const requests = [];
 
-for (const checkInCheckOut of checkInCheckOuts) {
+for (const checkInCheckOut of checkInCheckOutRanges) {
+    // REVERTED TO THE ORIGINAL, WORKING F.REQ STRING LITERAL
+    // This string literal contains pre-escaped JSON for the f.req parameter.
+    // The %5C%22 is equivalent to \" (escaped double quote).
+    const fReqString = `%5B%5B%5B%22M0CRd%22,%22%5Bnull,%5Bnull,null,null,%5C%22${input.currency}%5C%22,%5B%5B${checkInCheckOut.start}%5D,%5B${checkInCheckOut.end}%5D,1,null,0%5D,null,null,null,null,null,null,null,null,%5B${input.adults},null,2%5D%5D,%5B1,null,1%5D,%5C%22${input.entity}%5C%22,%5Bnull,null,null,null,null,null,null,null,null,null,null,null,null,%5B%5C%22%5C%22%5D%5D,1,1%5D%22,null,%22generic%22%5D%5D%5D`;
+
     requests.push({
-        url: `https://www.google.com/_/TravelFrontendUi/data/batchexecute?source-path=%2Ftravel%2Fhotels%2Fentity%2F${entityId}%2Fprices&hl=en&rt=c&f.req=%5B%5B%5B%22M0CRd%22,%22%5Bnull,%5Bnull,null,null,%5C%22${currency}%5C%22,%5B%5B${checkInCheckOut.start}%5D,%5B${checkInCheckOut.end}%5D,1,null,0%5D,null,null,null,null,null,null,null,null,%5B${adults},null,2%5D%5D,%5B1,null,1%5D,%5C%22${entityId}%5C%22,%5Bnull,null,null,null,null,null,null,null,null,null,null,null,null,%5B%5C%22%5C%22%5D%5D,1,1%5D%22,null,%22generic%22%5D%5D%5D`,
+        url: `https://www.google.com/_/TravelFrontendUi/data/batchexecute?source-path=%2Ftravel%2Fhotels%2Fentity%2F${input.entity}%2Fprices&hl=en&rt=c&f.req=${fReqString}`,
         method: 'POST',
-        // The rest of headers are filled by Crawlee
         headers: {
-            referer: `https://www.google.com/travel/hotels/entity/${entityId}`,
+            // Corrected referer to remove the '0' prefix, as discussed previously
+            referer: `http://googleusercontent.com/google.com/travel/hotels/${input.entity}`,
+            // Added content-type header for POST requests
+            'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
         },
+        payload: '' // Explicitly set payload to empty string if no body content is expected
     });
 }
 
-// Create proxy configuration
-const proxyConfig = await Actor.createProxyConfiguration(proxyConfiguration);
+const proxyConfiguration = await Actor.createProxyConfiguration(input.proxyConfig);
 
 const crawler = new HttpCrawler({
-    proxyConfiguration: proxyConfig,
-    maxRequestRetries,
-    requestHandlerTimeoutSecs: requestTimeoutSecs,
-    async requestHandler({ request, log, body }) {
-        const output = body.toString();
-        console.log('RAW RESPONSE:', output);
-        log.info('Response length:', output.length);
-        log.info('Response starts with:', output.substring(0, 50));
-        const lines = output.split('\n');
-        log.info('Number of lines:', lines.length);
-        const targetLine = lines.find(line => line.trim().startsWith('['));
-        if (targetLine) {
-            const data = JSON.parse(targetLine);
-            const data2 = JSON.parse(data[0][2]);
-            log.info('data2', JSON.stringify(data2, null, 2));
-            log.info('data2[2]', JSON.stringify(data2?.[2], null, 2));
-            log.info('data2[2][21]', JSON.stringify(data2?.[2]?.[21], null, 2));
-            const prices = (data2?.[2]?.[21] || []).map(row => ({
-                provider: row?.[0]?.[0],
-                otaUrl: row?.[0]?.[2],
-                isOfficial: row?.[0]?.[5],
-                price: parseInt(row?.[12]?.[4]?.[2]),
-                price2: parseInt(row?.[12]?.[5]?.[2]),
+    proxyConfiguration,
+    // Add cookie persistence if it helps with Google's anti-bot measures
+    persistCookiesPerSession: true,
+    async requestHandler({ request, body, log }) {
+        try {
+            const rawOutput = body.toString();
+            // Google's batchexecute often returns multiple lines, with the actual JSON payload
+            // starting with `[["` or similar. We need to find and parse that specific line.
+            const lines = rawOutput.split('\n');
+            const targetLine = lines.find(line => line.trim().startsWith('[') && line.trim().endsWith(']'));
+
+            if (!targetLine) {
+                log.error('No valid JSON payload line found in the response. This might indicate:', {
+                    possibleReasons: [
+                        'Hotel not available for the specified dates',
+                        'Google Travel blocking the request',
+                        'Invalid entity ID or parameters'
+                    ],
+                    url: request.url,
+                    responseLength: rawOutput.length,
+                    responsePreview: rawOutput.substring(0, 200) + '...'
+                });
+                return; // Skip processing if no target line
+            }
+
+            // Parse the outer JSON array
+            const outerData = JSON.parse(targetLine);
+
+            // Check if outerData has the expected structure and contains the inner JSON string
+            if (!Array.isArray(outerData) || outerData.length < 1 || !Array.isArray(outerData[0]) || outerData[0].length < 3 || typeof outerData[0][2] !== 'string') {
+                log.error('Unexpected outer JSON structure. This might indicate:', {
+                    possibleReasons: [
+                        'Hotel not available for the specified dates',
+                        'Google Travel API structure changed',
+                        'Rate limiting or blocking'
+                    ],
+                    url: request.url,
+                    outerDataLength: outerData?.length,
+                    firstElementType: typeof outerData?.[0],
+                    hasInnerData: typeof outerData?.[0]?.[2]
+                });
+                return;
+            }
+
+            // Parse the inner JSON string
+            const innerData = JSON.parse(outerData[0][2]);
+
+            // Safely extract prices and related data
+            const pricesData = innerData[2]?.[21] || []; // Use optional chaining and default to empty array
+            const prices = pricesData.map(row => ({
+                provider: row[0]?.[0],
+                otaUrl: row[0]?.[2],
+                isOfficial: row[0]?.[5],
+                price: parseInt(row[12]?.[4]?.[2], 10), // Base 10 for parseInt
+                price2: parseInt(row[12]?.[5]?.[2], 10), // Base 10 for parseInt
             }));
-            log.info('data2[2][21][0]', data2?.[2]?.[21]?.[0]);
-            log.info('prices', prices);
+
+            // Extract other relevant data
+            const currency = innerData[1]?.[3];
+            const checkInDateOutput = innerData[1]?.[4]?.[0]?.join('-'); // YYYY-MM-DD
+            const checkOutDateOutput = innerData[1]?.[4]?.[1]?.join('-'); // YYYY-MM-DD
+
+            if (prices.length > 0) {
+                log.info('Extracted Prices:', prices);
+                log.info('Source Data Sample:', innerData[2]?.[21]?.[0]); // Log a sample for debugging
+            } else {
+                log.warning('No prices found for this date range. This could mean:', {
+                    reason: 'No availability for the specified dates',
+                    checkInDate: checkInDateOutput,
+                    checkOutDate: checkOutDateOutput,
+                    adults: input.adults,
+                    currency: input.currency
+                });
+            }
+
             await Dataset.pushData({
                 prices,
-                adults: adults,
-                currency: data2?.[1]?.[3],
-                checkInDate: data2?.[1]?.[4]?.[0]?.join('-'),
-                checkOutDate: data2?.[1]?.[4]?.[1]?.join('-'),
-                entityId: entityId,
-                days: days
+                adults: input.adults,
+                currency,
+                checkInDate: checkInDateOutput,
+                checkOutDate: checkOutDateOutput,
             });
-            await Actor.setValue('data2-debug.json', JSON.stringify(data2, null, 2), { contentType: 'application/json' });
-            await Actor.setValue(`response-${request.id}.txt`, output, { contentType: 'text/plain' });
-        } else {
-            log.error('No target line found in the response');
+
+        } catch (error) {
+            log.error('Error processing request or parsing JSON:', {
+                url: request.url,
+                error: error.message,
+                stack: error.stack,
+            });
         }
     },
 });
 
 await crawler.run(requests);
 
-// Log completion
-console.log('Google Travel scraper completed successfully');
-
-// Gracefully exit the Actor process
+// Gracefully exit the Actor process. It's recommended to quit all Actors with an exit()
 await Actor.exit();

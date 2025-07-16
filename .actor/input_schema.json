@@ -1,0 +1,62 @@
+{
+    "title": "Actor Input Schema",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+      "checkInDate": {
+        "title": "Check-in Date",
+        "type": "string",
+        "description": "The date of check-in in YYYY-MM-DD format (e.g., 2025-07-30).",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+        "editor": "datepicker"
+      },
+      "days": {
+        "title": "Number of Days",
+        "type": "integer",
+        "minimum": 1,
+        "description": "Length of stay in days. Must be at least 1.",
+        "editor": "number"
+      },
+      "adults": {
+        "title": "Adults",
+        "type": "integer",
+        "minimum": 1,
+        "description": "Number of adult guests. Must be at least 1.",
+        "editor": "number"
+      },
+      "currency": {
+        "title": "Currency",
+        "type": "string",
+        "description": "Currency code. Use ISO 4217 standard codes.",
+        "enum": ["USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "CNY", "SEK", "NZD", "MXN", "SGD", "HKD", "NOK", "KRW", "TRY", "RUB", "INR", "BRL", "ZAR", "PLN", "THB", "IDR", "HUF", "CZK", "ILS", "CLP", "PHP", "AED", "COP", "SAR", "MYR", "RON", "BGN", "HRK", "DKK", "ISK", "BHD", "KWD", "QAR", "OMR", "JOD", "LBP", "EGP", "MAD", "TND", "LYD", "DZD", "MUR", "KES", "NGN", "GHS", "UGX", "TZS", "ZMW", "MWK", "BWP", "NAD", "SZL", "LSL", "MOP", "BND", "FJD", "PGK", "SBD", "VUV", "WST", "TOP", "KID", "XPF", "XAF", "XOF", "XCD", "ANG", "AWG", "BBD", "BMD", "BZD", "GYD", "JMD", "KYD", "TTD", "HTG", "DOP"],
+        "enumTitles": ["US Dollar (USD)", "Euro (EUR)", "British Pound (GBP)", "Japanese Yen (JPY)", "Canadian Dollar (CAD)", "Australian Dollar (AUD)", "Swiss Franc (CHF)", "Chinese Yuan (CNY)", "Swedish Krona (SEK)", "New Zealand Dollar (NZD)", "Mexican Peso (MXN)", "Singapore Dollar (SGD)", "Hong Kong Dollar (HKD)", "Norwegian Krone (NOK)", "South Korean Won (KRW)", "Turkish Lira (TRY)", "Russian Ruble (RUB)", "Indian Rupee (INR)", "Brazilian Real (BRL)", "South African Rand (ZAR)", "Polish Złoty (PLN)", "Thai Baht (THB)", "Indonesian Rupiah (IDR)", "Hungarian Forint (HUF)", "Czech Koruna (CZK)", "Israeli Shekel (ILS)", "Chilean Peso (CLP)", "Philippine Peso (PHP)", "UAE Dirham (AED)", "Colombian Peso (COP)", "Saudi Riyal (SAR)", "Malaysian Ringgit (MYR)", "Romanian Leu (RON)", "Bulgarian Lev (BGN)", "Croatian Kuna (HRK)", "Danish Krone (DKK)", "Icelandic Króna (ISK)", "Bahraini Dinar (BHD)", "Kuwaiti Dinar (KWD)", "Qatari Riyal (QAR)", "Omani Rial (OMR)", "Jordanian Dinar (JOD)", "Lebanese Pound (LBP)", "Egyptian Pound (EGP)", "Moroccan Dirham (MAD)", "Tunisian Dinar (TND)", "Libyan Dinar (LYD)", "Algerian Dinar (DZD)", "Mauritian Rupee (MUR)", "Kenyan Shilling (KES)", "Nigerian Naira (NGN)", "Ghanaian Cedi (GHS)", "Ugandan Shilling (UGX)", "Tanzanian Shilling (TZS)", "Zambian Kwacha (ZMW)", "Malawian Kwacha (MWK)", "Botswana Pula (BWP)", "Namibian Dollar (NAD)", "Swazi Lilangeni (SZL)", "Lesotho Loti (LSL)", "Macanese Pataca (MOP)", "Brunei Dollar (BND)", "Fijian Dollar (FJD)", "Papua New Guinean Kina (PGK)", "Solomon Islands Dollar (SBD)", "Vanuatu Vatu (VUV)", "Samoan Tālā (WST)", "Tongan Paʻanga (TOP)", "Kiribati Dollar (KID)", "CFP Franc (XPF)", "Central African CFA Franc (XAF)", "West African CFA Franc (XOF)", "East Caribbean Dollar (XCD)", "Netherlands Antillean Guilder (ANG)", "Aruban Florin (AWG)", "Barbadian Dollar (BBD)", "Bermudian Dollar (BMD)", "Belize Dollar (BZD)", "Guyanese Dollar (GYD)", "Jamaican Dollar (JMD)", "Cayman Islands Dollar (KYD)", "Trinidad and Tobago Dollar (TTD)", "Haitian Gourde (HTG)", "Dominican Peso (DOP)"],
+        "editor": "select"
+      },
+      "entity": {
+        "title": "Entity",
+        "type": "string",
+        "description": "Target entity, such as a hotel ID, specific location (e.g., city, region), or property name.",
+        "minLength": 1,
+        "editor": "textfield"
+      },
+      "proxyConfig": {
+        "title": "Proxy Configuration",
+        "type": "object",
+        "description": "Proxy configuration for the scraper. Use Apify proxy or custom proxy settings.",
+        "prefill": {
+          "useApifyProxy": true,
+          "apifyProxyGroups": ["RESIDENTIAL"],
+          "apifyProxyCountry": "JP"
+        },
+        "editor": "proxy"
+      }
+    },
+    "required": [
+      "checkInDate",
+      "days",
+      "adults",
+      "currency",
+      "entity"
+    ],
+    "additionalProperties": false
+  }
